@@ -6898,6 +6898,28 @@ segments:
     - [auto, c, script/dig_03]
     - [auto, c, script/dig_04]
     - [auto, c, script/dig_05]
+  - dir: battle/area/tst
+    type: code
+    start: auto
+    vram_class: battle_area
+    subalign: 8
+    subsegments:
+    - [auto, c, area]
+    - [auto, c, actor/goomba]
+    - [auto, c, actor/spiked_goomba]
+    - [auto, c, actor/koopa_troopa]
+    - [auto, c, actor/bob_omb]
+    - [auto, c, actor/cleft]
+    - [auto, c, actor/bandit]
+    - [auto, c, actor/pokey]
+    - [auto, c, actor/buzzy_beetle]
+    - [auto, c, actor/piranha_plant]
+    - [auto, c, actor/clubba]
+    - [auto, c, actor/red_shy_guy]
+    - [auto, c, actor/spear_guy]
+    - [auto, c, actor/spike_top]
+    - [auto, c, actor/bony_beetle]
+    - [auto, c, actor/hammer_bro]
 
 #######################
 ### Battle Partners ###
@@ -9498,6 +9520,17 @@ segments:
     - [auto, c, music]
     - [auto, c, main]
     - [auto, c, entity]
+  - name: isk_20
+    dir: world/area_isk/isk_20
+    type: code
+    start: auto
+    vram_class: map
+    subsegments:
+    - [auto, cpp, main]
+    - [auto, cpp, npc]
+    - [auto, cpp, entity]
+    - [auto, cpp, scenes]
+    - [auto, cpp, gauntlet]
   - name: trd_00
     dir: world/area_trd/trd_00
     type: code

@@ -59,5 +59,6 @@ extern MapSettings isk_14_settings;
 extern MapSettings isk_16_settings;
 extern MapSettings isk_18_settings;
 extern MapSettings isk_19_settings;
+EXTERN_C MapSettings isk_20_settings;
 
 #endif

@@ -466,6 +466,7 @@ MapConfig isk_maps[] = {
     { MAP(isk_16), .songVariation = 1, .sfxReverb = 2 },
     { MAP(isk_18), .songVariation = 1, .sfxReverb = 2 },
     { MAP(isk_19), .songVariation = 1, .sfxReverb = 2 },
+    { MAP(isk_20), .songVariation = 1, .sfxReverb = 2 },
 };
 
 /// Koopa Bros. Fortress
