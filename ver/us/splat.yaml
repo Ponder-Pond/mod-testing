@@ -6086,12 +6086,19 @@ segments:
     - [auto, c, area]
     - [auto, c, actor/goomba]
     - [auto, c, actor/spiked_goomba]
-    - [auto, c, actor/paragoomba]
-    - [auto, c, stage/kmr_02]
-    - [auto, c, stage/kmr_03]
-    - [auto, c, stage/kmr_04]
-    - [auto, c, stage/kmr_05]
-    - [auto, c, stage/kmr_06]
+    - [auto, c, actor/koopa_troopa]
+    - [auto, c, actor/bob_omb]
+    - [auto, c, actor/cleft]
+    - [auto, c, actor/bandit]
+    - [auto, c, actor/pokey]
+    - [auto, c, actor/buzzy_beetle]
+    - [auto, c, actor/piranha_plant]
+    - [auto, c, actor/clubba]
+    - [auto, c, actor/red_shy_guy]
+    - [auto, c, actor/spear_guy]
+    - [auto, c, actor/spike_top]
+    - [auto, c, actor/bony_beetle]
+    - [auto, c, actor/hammer_bro]
   - dir: battle/area/kmr_part_2
     type: code
     start: 0x439A90
@@ -6898,28 +6905,28 @@ segments:
     - [auto, c, script/dig_03]
     - [auto, c, script/dig_04]
     - [auto, c, script/dig_05]
-  - dir: battle/area/tst
-    type: code
-    start: auto
-    vram_class: battle_area
-    subalign: 8
-    subsegments:
-    - [auto, c, area]
-    - [auto, c, actor/goomba]
-    - [auto, c, actor/spiked_goomba]
-    - [auto, c, actor/koopa_troopa]
-    - [auto, c, actor/bob_omb]
-    - [auto, c, actor/cleft]
-    - [auto, c, actor/bandit]
-    - [auto, c, actor/pokey]
-    - [auto, c, actor/buzzy_beetle]
-    - [auto, c, actor/piranha_plant]
-    - [auto, c, actor/clubba]
-    - [auto, c, actor/red_shy_guy]
-    - [auto, c, actor/spear_guy]
-    - [auto, c, actor/spike_top]
-    - [auto, c, actor/bony_beetle]
-    - [auto, c, actor/hammer_bro]
+  # - dir: battle/area/tst
+  #   type: code
+  #   start: auto
+  #   vram_class: battle_area
+  #   subalign: 8
+  #   subsegments:
+  #   - [auto, c, area]
+  #   - [auto, c, actor/goomba]
+  #   - [auto, c, actor/spiked_goomba]
+  #   - [auto, c, actor/koopa_troopa]
+  #   - [auto, c, actor/bob_omb]
+  #   - [auto, c, actor/cleft]
+  #   - [auto, c, actor/bandit]
+  #   - [auto, c, actor/pokey]
+  #   - [auto, c, actor/buzzy_beetle]
+  #   - [auto, c, actor/piranha_plant]
+  #   - [auto, c, actor/clubba]
+  #   - [auto, c, actor/red_shy_guy]
+  #   - [auto, c, actor/spear_guy]
+  #   - [auto, c, actor/spike_top]
+  #   - [auto, c, actor/bony_beetle]
+  #   - [auto, c, actor/hammer_bro]
 
 #######################
 ### Battle Partners ###

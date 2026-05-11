@@ -10,6 +10,8 @@
 #include "mapfs/isk_20_shape.h"
 #include "mapfs/isk_20_hit.h"
 
+#include "dx/debug_menu.h"
+
 #include "sprite/npc/Goomba.h"
 #include "sprite/npc/SpikedGoomba.h"
 #include "sprite/npc/KoopaTroopa.h"
@@ -52,10 +54,12 @@ enum MapVars {
 
 enum MapFlags {
     MF_GauntletDefeated    = MapFlag(0),
+    MF_StartedGauntlet = MapFlag(1),
+    MF_StartNextGauntletRound = MapFlag(2),
 };
 
 enum BattleNames {
-    BTL_TST_FORMATION_0 = 0x2F00,
+    BTL_TST_FORMATION_0 = 0x0000,
     BTL_TST_FORMATION_1,
     BTL_TST_FORMATION_2,
     BTL_TST_FORMATION_3,
@@ -79,6 +83,7 @@ enum BattleStages {
 extern EvtScript EVS_Main;
 extern EvtScript EVS_SetupFlames;
 extern EvtScript EVS_BindExitTriggers;
+extern API_CALLABLE(ResetGauntletRounds);
 extern NpcGroupList GoombaNPC;
 extern NpcGroupList SpikedGoombaNPC;
 extern NpcGroupList KoopaTroopaNPC;
@@ -94,10 +99,11 @@ extern NpcGroupList SpearGuyNPC;
 extern NpcGroupList SpikeTopNPC;
 extern NpcGroupList BonyBeetleNPC;
 extern NpcGroupList HammerBrosNPC;
+extern EvtScript EVS_GauntletIdle;
 extern EvtScript EVS_OpenLeftGate;
 extern EvtScript EVS_CloseLeftGate;
 extern EvtScript EVS_OpenRightGate;
-extern EvtScript EVS_StartGauntletRound;
+extern EvtScript EVS_StartGauntlet;
 extern EvtScript EVS_CloseRightGate;
 extern API_CALLABLE(GetRandomArenaNPC);
 extern API_CALLABLE(ResetArenaGauntlet);

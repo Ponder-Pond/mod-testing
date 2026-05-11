@@ -2,13 +2,39 @@
 
 namespace isk_20 {
 
+s32 gGauntletRound = 0;
+s32 gGauntletMaxRounds = 5;
+
+API_CALLABLE(IncrementGauntletRound) {
+    gGauntletRound += 1;
+    return ApiStatus_DONE2;
+}
+
+API_CALLABLE(IsGauntletFinished) {
+    evt_set_variable(script, LVar0, gGauntletRound >= gGauntletMaxRounds);
+
+    return ApiStatus_DONE2;
+}
+
+API_CALLABLE(ResetGauntletRounds) {
+    gGauntletRound = 0;
+    return ApiStatus_DONE2;
+}
+
+API_CALLABLE(GetGauntletRounds) {
+    evt_set_variable(script, LVar3, gGauntletRound);
+    evt_set_variable(script, LVar4, gGauntletMaxRounds);
+
+    return ApiStatus_DONE2;
+}
+
 #include "world/common/enemy/Goomba_Stationary.inc.cpp"
 
 EvtScript EVS_NpcIdle_Goomba = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -17,7 +43,6 @@ EvtScript EVS_NpcIdle_Goomba = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_Goomba_Run)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_Goomba_Dizzy)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -25,12 +50,26 @@ EvtScript EVS_NpcIdle_Goomba = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Goomba = {
+EvtScript EVS_NpcDefeat_Common = {
     Call(GetBattleOutcome, LVar0)
     Switch(LVar0)
         CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
+            // advance gauntlet ONLY if still active
+            DebugPrintf("MF_GauntletDefeated: %d", MF_GauntletDefeated)
+            IfEq(MF_GauntletDefeated, false)
+                Call(IncrementGauntletRound)
+                Call(GetGauntletRounds)
+                DebugPrintf("gGauntletRound: %d, gGauntletMaxRounds: %d", LVar3, LVar4)
+                IfLt(LVar3, LVar4)
+                    Set(MF_StartedGauntlet, true)
+                    Set(MF_StartNextGauntletRound, true)
+                Else
+                    Set(MF_GauntletDefeated, true)
+                    Set(MF_StartNextGauntletRound, false)
+                    Set(MF_StartedGauntlet, true)
+                EndIf
+            Else
+                Set(MF_StartNextGauntletRound, false)
             EndIf
             Call(DoNpcDefeatSpecial)
         CaseEq(OUTCOME_PLAYER_LOST)
@@ -43,7 +82,7 @@ EvtScript EVS_NpcDefeat_Goomba = {
 EvtScript EVS_NpcInit_Goomba = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Goomba))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Goomba))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -64,8 +103,8 @@ NpcData NpcData_Goomba = {
 EvtScript EVS_NpcIdle_SpikedGoomba = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -74,7 +113,6 @@ EvtScript EVS_NpcIdle_SpikedGoomba = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpikedGoomba_Run)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpikedGoomba_Laugh)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -82,25 +120,10 @@ EvtScript EVS_NpcIdle_SpikedGoomba = {
     End
 };
 
-EvtScript EVS_NpcDefeat_SpikedGoomba = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_SpikedGoomba = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_SpikedGoomba))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_SpikedGoomba))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -121,8 +144,8 @@ NpcData NpcData_SpikedGoomba = {
 EvtScript EVS_NpcIdle_KoopaTroopa = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -131,7 +154,6 @@ EvtScript EVS_NpcIdle_KoopaTroopa = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_KoopaTroopa_Run)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_KoopaTroopa_ShellSpin)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -139,25 +161,10 @@ EvtScript EVS_NpcIdle_KoopaTroopa = {
     End
 };
 
-EvtScript EVS_NpcDefeat_KoopaTroopa = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_KoopaTroopa = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_KoopaTroopa))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_KoopaTroopa))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -178,8 +185,8 @@ NpcData NpcData_KoopaTroopa = {
 EvtScript EVS_NpcIdle_Bobomb = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -188,7 +195,6 @@ EvtScript EVS_NpcIdle_Bobomb = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_Bobomb_Run)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_Bobomb_AngryChase)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -196,25 +202,10 @@ EvtScript EVS_NpcIdle_Bobomb = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Bobomb = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_Bobomb = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Bobomb))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Bobomb))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -235,8 +226,8 @@ NpcData NpcData_Bobomb = {
 EvtScript EVS_NpcIdle_Cleft = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -245,7 +236,6 @@ EvtScript EVS_NpcIdle_Cleft = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_Cleft_Anim07)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_Cleft_Anim11)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -253,25 +243,10 @@ EvtScript EVS_NpcIdle_Cleft = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Cleft = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_Cleft = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Cleft))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Cleft))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -292,8 +267,8 @@ NpcData NpcData_Cleft = {
 EvtScript EVS_NpcIdle_Bandit = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -302,7 +277,6 @@ EvtScript EVS_NpcIdle_Bandit = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_Bandit_Run)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_Bandit_Laugh)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -310,25 +284,10 @@ EvtScript EVS_NpcIdle_Bandit = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Bandit = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_Bandit = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Bandit))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Bandit))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -349,8 +308,8 @@ NpcData NpcData_Bandit = {
 EvtScript EVS_NpcIdle_Pokey = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -359,7 +318,6 @@ EvtScript EVS_NpcIdle_Pokey = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_Pokey_Run4)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_Pokey_Run4)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -367,25 +325,10 @@ EvtScript EVS_NpcIdle_Pokey = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Pokey = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_Pokey = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Pokey))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Pokey))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -406,8 +349,8 @@ NpcData NpcData_Pokey = {
 EvtScript EVS_NpcIdle_BuzzyBeetle = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -416,7 +359,6 @@ EvtScript EVS_NpcIdle_BuzzyBeetle = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_BuzzyBeetle_Anim04)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_BuzzyBeetle_Anim05)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -424,25 +366,10 @@ EvtScript EVS_NpcIdle_BuzzyBeetle = {
     End
 };
 
-EvtScript EVS_NpcDefeat_BuzzyBeetle = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_BuzzyBeetle = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_BuzzyBeetle))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_BuzzyBeetle))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -463,8 +390,8 @@ NpcData NpcData_BuzzyBeetle = {
 EvtScript EVS_NpcIdle_PiranhaPlant = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -472,7 +399,6 @@ EvtScript EVS_NpcIdle_PiranhaPlant = {
     Call(SetNpcPos, NPC_SELF, GEN_ENEMY_BATTLE_POS_VEC)
     Call(SetNpcAnimation, NPC_SELF, ANIM_SmallPiranha_Anim03)
     Wait(5)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_SmallPiranha_Anim07)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -480,25 +406,10 @@ EvtScript EVS_NpcIdle_PiranhaPlant = {
     End
 };
 
-EvtScript EVS_NpcDefeat_PiranhaPlant = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_PiranhaPlant = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_PiranhaPlant))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_PiranhaPlant))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -519,8 +430,8 @@ NpcData NpcData_PiranhaPlant = {
 EvtScript EVS_NpcIdle_Clubba = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -529,7 +440,6 @@ EvtScript EVS_NpcIdle_Clubba = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_WorldClubba_Anim04)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_WorldClubba_Anim10)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -537,25 +447,10 @@ EvtScript EVS_NpcIdle_Clubba = {
     End
 };
 
-EvtScript EVS_NpcDefeat_Clubba = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_Clubba = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_Clubba))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Clubba))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -576,8 +471,8 @@ NpcData NpcData_Clubba = {
 EvtScript EVS_NpcIdle_ShyGuy = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -586,7 +481,6 @@ EvtScript EVS_NpcIdle_ShyGuy = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_ShyGuy_Red_Anim03)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_ShyGuy_Red_Anim04)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -594,25 +488,10 @@ EvtScript EVS_NpcIdle_ShyGuy = {
     End
 };
 
-EvtScript EVS_NpcDefeat_ShyGuy = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_ShyGuy = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_ShyGuy))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_ShyGuy))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -633,8 +512,8 @@ NpcData NpcData_ShyGuy = {
 EvtScript EVS_NpcIdle_SpearGuy = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -643,7 +522,6 @@ EvtScript EVS_NpcIdle_SpearGuy = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpearGuy_Anim06)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpearGuy_Anim0E)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -651,25 +529,10 @@ EvtScript EVS_NpcIdle_SpearGuy = {
     End
 };
 
-EvtScript EVS_NpcDefeat_SpearGuy = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_SpearGuy = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_SpearGuy))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_SpearGuy))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -688,8 +551,8 @@ NpcData NpcData_SpearGuy = {
 EvtScript EVS_NpcIdle_SpikeTop = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -698,7 +561,6 @@ EvtScript EVS_NpcIdle_SpikeTop = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpikeTop_Anim08)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_SpikeTop_Anim0A)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -706,25 +568,10 @@ EvtScript EVS_NpcIdle_SpikeTop = {
     End
 };
 
-EvtScript EVS_NpcDefeat_SpikeTop = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_SpikeTop = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_SpikeTop))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_SpikeTop))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -743,8 +590,8 @@ NpcData NpcData_SpikeTop = {
 EvtScript EVS_NpcIdle_BonyBeetle = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -753,7 +600,6 @@ EvtScript EVS_NpcIdle_BonyBeetle = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_BonyBeetle_Anim0F)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_BonyBeetle_Anim17)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -761,25 +607,10 @@ EvtScript EVS_NpcIdle_BonyBeetle = {
     End
 };
 
-EvtScript EVS_NpcDefeat_BonyBeetle = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_BonyBeetle = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_BonyBeetle))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_BonyBeetle))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };
@@ -800,8 +631,8 @@ NpcData NpcData_BonyBeetle = {
 EvtScript EVS_NpcIdle_HammerBros = {
     Label(0)
         Call(GetSelfVar, 0, LVar0)
-        Wait(1)
-        IfEq(LVar0, true)
+        IfEq(LVar0, false)
+            Wait(1)
             Goto(0)
         EndIf
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, false)
@@ -810,7 +641,6 @@ EvtScript EVS_NpcIdle_HammerBros = {
     Call(SetNpcSpeed, NPC_SELF, Float(5.0))
     Call(SetNpcAnimation, NPC_SELF, ANIM_HammerBros_Anim07)
     Call(NpcMoveTo, NPC_SELF, GEN_ENEMY_BATTLE_POS_X, GEN_ENEMY_BATTLE_POS_Z, 0)
-    ExecWait(EVS_CloseRightGate)
     Call(SetNpcAnimation, NPC_SELF, ANIM_HammerBros_Anim18)
     Wait(30)
     Call(StartBossBattle, SONG_SPECIAL_BATTLE)
@@ -818,25 +648,10 @@ EvtScript EVS_NpcIdle_HammerBros = {
     End
 };
 
-EvtScript EVS_NpcDefeat_HammerBros = {
-    Call(GetBattleOutcome, LVar0)
-    Switch(LVar0)
-        CaseEq(OUTCOME_PLAYER_WON)
-            IfFlag(MF_GauntletDefeated, false)
-                Exec(EVS_OpenRightGate)
-            EndIf
-            Call(DoNpcDefeatSpecial)
-        CaseEq(OUTCOME_PLAYER_LOST)
-        CaseEq(OUTCOME_PLAYER_FLED)
-    EndSwitch
-    Return
-    End
-};
-
 EvtScript EVS_NpcInit_HammerBros = {
     Call(SetNpcFlagBits, NPC_SELF, NPC_FLAG_INACTIVE, true)
     Call(BindNpcIdle, NPC_SELF, Ref(EVS_NpcIdle_HammerBros))
-    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_HammerBros))
+    Call(BindNpcDefeat, NPC_SELF, Ref(EVS_NpcDefeat_Common))
     Return
     End
 };

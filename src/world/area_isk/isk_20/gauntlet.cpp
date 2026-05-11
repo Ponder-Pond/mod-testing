@@ -83,112 +83,73 @@ API_CALLABLE(GetRandomArenaIndex) {
     return ApiStatus_DONE2;
 }
 
-API_CALLABLE(GetRandomArenaNPC) {
-    s32 index;
-
-    if (gGauntletRemaining <= 0) {
-        evt_set_variable(script, LVar0, -1);
-        return ApiStatus_DONE2;
-    }
-
-    while (true) {
-        index = rand_int(14);
-
-        // prevent immediate repeat only (optional)
-        if (gArenaNPCs[index].npcID == gLastArenaNPC) {
-            continue;
-        }
-
-        gLastArenaNPC = gArenaNPCs[index].npcID;
-
-        gGauntletRemaining--;
-
-        evt_set_variable(script, LVar0,
-            gArenaNPCs[index].npcID);
-
-        break;
-    }
-
-    return ApiStatus_DONE2;
-}
-
 EvtScript EVS_GauntletRandomizer = {
-
-    // Finished all rounds?
-    IfEq(MF_GauntletDefeated, true)
-        Return
-    EndIf
-
     Call(GetRandomArenaIndex)
-
     IfEq(LVar0, -1)
-        Set(MF_GauntletDefeated, true)
         Return
     EndIf
-
     Switch(LVar0)
     CaseEq(0)
-        Call(MakeNpcs, false, Ref(GoombaNPC))
+        Call(MakeNpcs, true, Ref(GoombaNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Goomba, 0, true)
     CaseEq(1)
-        Call(MakeNpcs, false, Ref(SpikedGoombaNPC))
+        Call(MakeNpcs, true, Ref(SpikedGoombaNPC))
         Wait(1)
         Call(SetNpcVar, NPC_SpikedGoomba, 0, true)
     CaseEq(2)
-        Call(MakeNpcs, false, Ref(KoopaTroopaNPC))
+        Call(MakeNpcs, true, Ref(KoopaTroopaNPC))
         Wait(1)
         Call(SetNpcVar, NPC_KoopaTroopa, 0, true)
     CaseEq(3)
-        Call(MakeNpcs, false, Ref(BobombNPC))
+        Call(MakeNpcs, true, Ref(BobombNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Bobomb, 0, true)
     CaseEq(4)
-        Call(MakeNpcs, false, Ref(CleftNPC))
+        Call(MakeNpcs, true, Ref(CleftNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Cleft, 0, true)
     CaseEq(5)
-        Call(MakeNpcs, false, Ref(BanditNPC))
+        Call(MakeNpcs, true, Ref(BanditNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Bandit, 0, true)
     CaseEq(6)
-        Call(MakeNpcs, false, Ref(PokeyNPC))
+        Call(MakeNpcs, true, Ref(PokeyNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Pokey, 0, true)
     CaseEq(7)
-        Call(MakeNpcs, false, Ref(BuzzyBeetleNPC))
+        Call(MakeNpcs, true, Ref(BuzzyBeetleNPC))
         Wait(1)
         Call(SetNpcVar, NPC_BuzzyBeetle, 0, true)
     CaseEq(8)
-        Call(MakeNpcs, false, Ref(PiranhaPlantNPC))
+        Call(MakeNpcs, true, Ref(PiranhaPlantNPC))
         Wait(1)
         Call(SetNpcVar, NPC_PiranhaPlant, 0, true)
     CaseEq(9)
-        Call(MakeNpcs, false, Ref(ClubbaNPC))
+        Call(MakeNpcs, true, Ref(ClubbaNPC))
         Wait(1)
         Call(SetNpcVar, NPC_Clubba, 0, true)
     CaseEq(10)
-        Call(MakeNpcs, false, Ref(ShyGuyNPC))
+        Call(MakeNpcs, true, Ref(ShyGuyNPC))
         Wait(1)
         Call(SetNpcVar, NPC_ShyGuy, 0, true)
     CaseEq(11)
-        Call(MakeNpcs, false, Ref(SpearGuyNPC))
+        Call(MakeNpcs, true, Ref(SpearGuyNPC))
         Wait(1)
         Call(SetNpcVar, NPC_SpearGuy, 0, true)
     CaseEq(12)
-        Call(MakeNpcs, false, Ref(SpikeTopNPC))
+        Call(MakeNpcs, true, Ref(SpikeTopNPC))
         Wait(1)
         Call(SetNpcVar, NPC_SpikeTop, 0, true)
     CaseEq(13)
-        Call(MakeNpcs, false, Ref(BonyBeetleNPC))
+        Call(MakeNpcs, true, Ref(BonyBeetleNPC))
         Wait(1)
         Call(SetNpcVar, NPC_BonyBeetle, 0, true)
     CaseEq(14)
-        Call(MakeNpcs, false, Ref(HammerBrosNPC))
+        Call(MakeNpcs, true, Ref(HammerBrosNPC))
         Wait(1)
         Call(SetNpcVar, NPC_HammerBros, 0, true)
     EndSwitch
-
     Return
     End
 };

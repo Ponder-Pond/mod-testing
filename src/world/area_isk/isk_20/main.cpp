@@ -17,8 +17,39 @@ EvtScript EVS_EnterMap = {
     Call(GetEntryID, LVar0)
     Switch(LVar0)
         CaseEq(0)
+            Exec(EVS_GauntletIdle)
             Exec(EVS_OpenLeftGate)
     EndSwitch
+    Return
+    End
+};
+
+EvtScript EVS_GauntletIdle = {
+    Loop(0)
+        // End controller after gauntlet finishes
+        IfEq(MF_GauntletDefeated, true)
+            DebugPrint("Gauntlet defeated")
+            BreakLoop
+        EndIf
+        // Initial gauntlet start
+        IfEq(MF_StartedGauntlet, false)
+            DebugPrint("Gauntlet started")
+            Call(ResetGauntletRounds)
+            Set(MF_GauntletDefeated, false)
+            Set(MF_StartNextGauntletRound, false)
+            Set(MF_StartedGauntlet, true)
+            ExecWait(EVS_StartGauntlet)
+        Else
+            // Continue next round
+            IfEq(MF_StartNextGauntletRound, true)
+                IfEq(MF_GauntletDefeated, false)
+                    Set(MF_StartNextGauntletRound, false)
+                    Exec(EVS_StartGauntlet)
+                EndIf
+            EndIf
+        EndIf
+        Wait(1)
+    EndLoop
     Return
     End
 };
@@ -29,6 +60,7 @@ EvtScript EVS_Main = {
     EVT_SETUP_CAMERA_NO_LEAD(0, 0, 0)
     ExecWait(EVS_SetupFlames)
     Call(SetMusic, 0, SONG_DRY_DRY_RUINS, 0, VOL_LEVEL_FULL)
+    Set(MF_StartedGauntlet, true)
     Exec(EVS_EnterMap)
     Return
     End

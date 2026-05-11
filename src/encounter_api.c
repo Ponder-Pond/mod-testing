@@ -3,6 +3,8 @@
 #include "effects.h"
 #include "battle/battle.h"
 
+s32 gIsArenaSpawning = false;
+
 API_CALLABLE(SetEncounterStatusFlags) {
     Bytecode* args = script->ptrReadPos;
     EncounterStatus* currentEncounter = &gCurrentEncounter;
@@ -39,19 +41,39 @@ API_CALLABLE(func_80044290) {
 API_CALLABLE(MakeNpcs) {
     Bytecode* args = script->ptrReadPos;
 
+    extern s32 gIsArenaSpawning;
+
     if (isInitialCall) {
+        if (gIsArenaSpawning) {
+            return ApiStatus_BLOCK;
+        }
+
+        gIsArenaSpawning = true;
         script->functionTemp[0] = 0;
     }
 
     switch (script->functionTemp[0]) {
+
         case 0:
-            make_npcs(evt_get_variable(script, *args++), gGameStatusPtr->mapID, (s32*) evt_get_variable(script, *args++));
+            make_npcs(
+                evt_get_variable(script, *args++),
+                gGameStatusPtr->mapID,
+                (s32*) evt_get_variable(script, *args++)
+            );
+
             script->functionTemp[0] = 1;
             break;
+
         case 1:
+            // wait until encounter system leaves creation phase
             if (gEncounterState != ENCOUNTER_STATE_CREATE) {
-                return ApiStatus_DONE2;
+                script->functionTemp[0] = 2;
             }
+            break;
+
+        case 2:
+            gIsArenaSpawning = false;
+            return ApiStatus_DONE2;
     }
 
     return ApiStatus_BLOCK;

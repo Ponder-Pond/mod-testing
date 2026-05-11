@@ -52,7 +52,8 @@ EvtScript EVS_CloseLeftGate = {
     Call(PlaySound, SOUND_LARGE_GATE_CLOSE)
     Call(ShakeCam, CAM_BATTLE, 0, 4, Float(0.5))
     Wait(30)
-    ExecWait(EVS_OpenRightGate)
+    // ExecWait(EVS_StartGauntletRound)
+    Set(MF_StartedGauntlet, false)
     Return
     End
 };
@@ -84,13 +85,22 @@ EvtScript EVS_OpenRightGate = {
     EndIf
     Call(StopSound, SOUND_LARGE_GATE_OPEN)
     Wait(10)
-    ExecWait(EVS_StartGauntletRound)
+    // ExecWait(EVS_StartGauntletRound)
     Return
     End
 };
 
-EvtScript EVS_StartGauntletRound = {
+EvtScript EVS_StartGauntlet = {
+    Wait(1)
+    ExecWait(EVS_OpenRightGate)
+    DebugPrintf("MF_StartedGauntlet: %d", MF_StartedGauntlet)
+    IfEq(MF_StartedGauntlet, false)
+        Set(LVar9, 0)
+    EndIf
+    Add(LVar9, 1)
+    DebugPrintf("Round %d", LVar9)
     ExecWait(EVS_GauntletRandomizer)
+    Exec(EVS_CloseRightGate)
     Return
     End
 };
