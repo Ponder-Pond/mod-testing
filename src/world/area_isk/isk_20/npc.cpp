@@ -2,32 +2,6 @@
 
 namespace isk_20 {
 
-s32 gGauntletRound = 0;
-s32 gGauntletMaxRounds = 5;
-
-API_CALLABLE(IncrementGauntletRound) {
-    gGauntletRound += 1;
-    return ApiStatus_DONE2;
-}
-
-API_CALLABLE(IsGauntletFinished) {
-    evt_set_variable(script, LVar0, gGauntletRound >= gGauntletMaxRounds);
-
-    return ApiStatus_DONE2;
-}
-
-API_CALLABLE(ResetGauntletRounds) {
-    gGauntletRound = 0;
-    return ApiStatus_DONE2;
-}
-
-API_CALLABLE(GetGauntletRounds) {
-    evt_set_variable(script, LVar3, gGauntletRound);
-    evt_set_variable(script, LVar4, gGauntletMaxRounds);
-
-    return ApiStatus_DONE2;
-}
-
 #include "world/common/enemy/Goomba_Stationary.inc.cpp"
 
 EvtScript EVS_NpcIdle_Goomba = {
@@ -57,16 +31,18 @@ EvtScript EVS_NpcDefeat_Common = {
             // advance gauntlet ONLY if still active
             DebugPrintf("MF_GauntletDefeated: %d", MF_GauntletDefeated)
             IfEq(MF_GauntletDefeated, false)
-                Call(IncrementGauntletRound)
-                Call(GetGauntletRounds)
-                DebugPrintf("gGauntletRound: %d, gGauntletMaxRounds: %d", LVar3, LVar4)
-                IfLt(LVar3, LVar4)
+                DebugPrintf("MV_GauntletRound: %d", MV_GauntletRound)
+                Add(MV_GauntletRound, 1)
+                DebugPrintf("MV_GauntletRound: %d", MV_GauntletRound)
+                Set(LVar3, MV_GauntletRound)
+                IfLt(LVar3, 5)
                     Set(MF_StartedGauntlet, true)
                     Set(MF_StartNextGauntletRound, true)
                 Else
                     Set(MF_GauntletDefeated, true)
                     Set(MF_StartNextGauntletRound, false)
                     Set(MF_StartedGauntlet, true)
+                    Call(DisablePlayerInput, false)
                 EndIf
             Else
                 Set(MF_StartNextGauntletRound, false)

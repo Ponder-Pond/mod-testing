@@ -60,7 +60,6 @@ EvtScript EVS_CloseLeftGate = {
 
 
 EvtScript EVS_OpenRightGate = {
-    Call(DisablePlayerInput, true)
     Wait(15)
     Call(UseSettingsFrom, CAM_DEFAULT, GEN_ENEMY_BATTLE_POS_VEC)
     Call(SetPanTarget, CAM_DEFAULT, GEN_ENEMY_BATTLE_POS_VEC)

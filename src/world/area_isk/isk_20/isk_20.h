@@ -49,7 +49,7 @@ enum NPCIDs {
 };
 
 enum MapVars {
-    MV_0    = MapVar(0),
+    MV_GauntletRound    = MapVar(0),
 };
 
 enum MapFlags {
@@ -83,7 +83,6 @@ enum BattleStages {
 extern EvtScript EVS_Main;
 extern EvtScript EVS_SetupFlames;
 extern EvtScript EVS_BindExitTriggers;
-extern API_CALLABLE(ResetGauntletRounds);
 extern NpcGroupList GoombaNPC;
 extern NpcGroupList SpikedGoombaNPC;
 extern NpcGroupList KoopaTroopaNPC;
@@ -106,7 +105,6 @@ extern EvtScript EVS_OpenRightGate;
 extern EvtScript EVS_StartGauntlet;
 extern EvtScript EVS_CloseRightGate;
 extern API_CALLABLE(GetRandomArenaNPC);
-extern API_CALLABLE(ResetArenaGauntlet);
 extern EvtScript EVS_GauntletRandomizer;
 
 } // namespace isk_20

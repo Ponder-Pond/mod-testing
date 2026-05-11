@@ -34,7 +34,6 @@ EvtScript EVS_GauntletIdle = {
         // Initial gauntlet start
         IfEq(MF_StartedGauntlet, false)
             DebugPrint("Gauntlet started")
-            Call(ResetGauntletRounds)
             Set(MF_GauntletDefeated, false)
             Set(MF_StartNextGauntletRound, false)
             Set(MF_StartedGauntlet, true)

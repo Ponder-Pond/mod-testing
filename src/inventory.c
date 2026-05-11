@@ -108,6 +108,7 @@ void clear_player_data(void) {
     for (i = 0; i < ARRAY_COUNT(playerData->equippedBadges); i++) {
         playerData->equippedBadges[i] = ITEM_NONE;
     }
+    playerData->equippedBadges[0] = ITEM_QUAKE_HAMMER;
 
     for (i = 0; i < ARRAY_COUNT(playerData->storedItems); i++) {
         playerData->storedItems[i] = ITEM_NONE;
