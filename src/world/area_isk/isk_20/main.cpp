@@ -28,12 +28,12 @@ EvtScript EVS_GauntletIdle = {
     Loop(0)
         // End controller after gauntlet finishes
         IfEq(MF_GauntletDefeated, true)
-            DebugPrint("Gauntlet defeated")
+            // DebugPrint("Gauntlet defeated")
             BreakLoop
         EndIf
         // Initial gauntlet start
         IfEq(MF_StartedGauntlet, false)
-            DebugPrint("Gauntlet started")
+            // DebugPrint("Gauntlet started")
             Set(MF_GauntletDefeated, false)
             Set(MF_StartNextGauntletRound, false)
             Set(MF_StartedGauntlet, true)

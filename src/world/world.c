@@ -509,6 +509,7 @@ MapConfig hos_maps[] = {
     { MAP(hos_04), .bgName = "hos_bg" },
     { MAP(hos_05), .bgName = "hos_bg", .songVariation = 1, .sfxReverb = 2 },
     { MAP(hos_06), .bgName = "hos_bg" },
+    { MAP(hos_07), .bgName = "hos_bg" },
     { MAP_WITH_INIT(hos_10), .bgName = "hos_bg" },
     { MAP(hos_20), .bgName = "hos_bg" },
 };

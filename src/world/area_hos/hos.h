@@ -36,6 +36,7 @@ extern MapSettings hos_03_settings;
 extern MapSettings hos_04_settings;
 extern MapSettings hos_05_settings;
 extern MapSettings hos_06_settings;
+extern MapSettings hos_07_settings;
 extern MapSettings hos_10_settings;
 extern MapSettings hos_20_settings;
 

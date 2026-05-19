@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SpriteSheet maxComponents="1" paletteGroups="1">
+	<PaletteList>
+		<Palette id="0" name="Default" src="Default.png"/>
+	</PaletteList>
+	<RasterList>
+		<Raster id="0" name="Violin1" palette="0" src="Violin1.png"/>
+		<Raster id="1" name="Violin2" palette="0" src="Violin2.png"/>
+		<Raster id="2" name="Violin3" palette="0" src="Violin3.png"/>
+		<Raster id="3" name="Violin4" palette="0" src="Violin4.png"/>
+		<Raster id="4" name="Violin5" palette="0" src="Violin5.png"/>
+		<Raster id="5" name="Violin6" palette="0" src="Violin6.png"/>
+		<Raster id="6" name="Violin7" palette="0" src="Violin7.png"/>
+		<Raster id="7" name="Violin8" palette="0" src="Violin8.png"/>
+		<Raster id="8" name="Violin9" palette="0" src="Violin9.png"/>
+		<Raster id="9" name="Violin10" palette="0" src="Violin10.png"/>
+	</RasterList>
+	<AnimationList>
+		<Animation name="Violin">
+			<Component name="Body" xyz="0,0,0">
+				<Label name="Start"/>
+				<SetRaster index="0"/>
+				<Wait duration="4"/>
+				<SetRaster index="1"/>
+				<Wait duration="12"/>
+				<SetRaster index="2"/>
+				<Wait duration="16"/>
+				<SetRaster index="3"/>
+				<Wait duration="16"/>
+				<SetRaster index="4"/>
+				<Wait duration="16"/>
+				<SetRaster index="5"/>
+				<Wait duration="4"/>
+				<SetRaster index="6"/>
+				<Wait duration="12"/>
+				<SetRaster index="7"/>
+				<Wait duration="16"/>
+				<SetRaster index="8"/>
+				<Wait duration="16"/>
+				<SetRaster index="9"/>
+				<Wait duration="16"/>
+				<Goto dest="Start"/>
+			</Component>
+		</Animation>
+	</AnimationList>
+</SpriteSheet>

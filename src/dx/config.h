@@ -29,7 +29,7 @@
 #define DX_SKIP_DEMO 1
 
 /// Map to load when starting a new game.
-#define NEW_GAME_MAP_ID "isk_20"
+#define NEW_GAME_MAP_ID "hos_07"
 
 /// Entry to use when starting a new game.
 #define NEW_GAME_ENTRY_ID 0

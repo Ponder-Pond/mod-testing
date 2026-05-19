@@ -92,12 +92,12 @@ EvtScript EVS_OpenRightGate = {
 EvtScript EVS_StartGauntlet = {
     Wait(1)
     ExecWait(EVS_OpenRightGate)
-    DebugPrintf("MF_StartedGauntlet: %d", MF_StartedGauntlet)
+    // DebugPrintf("MF_StartedGauntlet: %d", MF_StartedGauntlet)
     IfEq(MF_StartedGauntlet, false)
         Set(LVar9, 0)
     EndIf
     Add(LVar9, 1)
-    DebugPrintf("Round %d", LVar9)
+    // DebugPrintf("Round %d", LVar9)
     ExecWait(EVS_GauntletRandomizer)
     Exec(EVS_CloseRightGate)
     Return

@@ -9866,6 +9866,17 @@ segments:
     - [auto, c, rooms]
     - [auto, c, merluvlee]
     - [auto, c, chest]
+  - name: hos_07
+    dir: world/area_hos/hos_07
+    type: code
+    start: auto
+    vram_class: map
+    subsegments:
+    - [auto, cpp, main]
+    - [auto, cpp, model_fx]
+    - [auto, cpp, music]
+    - [auto, cpp, npc]
+    - [auto, cpp, scenes]
   - name: hos_10
     dir: world/area_hos/hos_10
     type: code
